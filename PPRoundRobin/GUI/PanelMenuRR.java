@@ -28,6 +28,7 @@ public class PanelMenuRR extends JPanel {
 	private int cont;
 	private int contBloq;
 	private int tempito;
+	private int iniciobl;
 
 	public PanelMenuRR(JTable tabla, JTable diagrama) {
 		this.setLayout(null);
@@ -59,7 +60,7 @@ public class PanelMenuRR extends JPanel {
 		lblTLlegada.setBounds(15, 175, 120, 14);
 		add(lblTLlegada);
 
-		textFieldTLlegada = new JTextField();
+		textFieldTLlegada = new JTextField("0");
 		textFieldTLlegada.setFont(new Font("Gulim", Font.PLAIN, 12));
 		textFieldTLlegada.setBounds(15, 200, 120, 18);
 		add(textFieldTLlegada);
@@ -98,23 +99,13 @@ public class PanelMenuRR extends JPanel {
 							cola1.getRaiz().getT_retorno(), cola1.getRaiz().getT_espera(),
 							cola1.getRaiz().getBloqueado(), textFieldNombre.getText());
 					
-					int col = tabla.getModel().getColumnCount();
-
-					Object[] fila = new Object[col];
-					fila[0] = cola1.getRaiz().getNombre();
-					fila[1] = cola1.getRaiz().getT_llegada();
-					fila[2] = cola1.getRaiz().getT_rafaga();
-					fila[3] = cola1.getRaiz().getT_comienzo();
-					fila[4] = cola1.getRaiz().getT_final();
-					fila[5] = cola1.getRaiz().getT_retorno();
-					fila[6] = cola1.getRaiz().getT_espera();
-					//Agrego al JTable los nuevos valores para que el usuario los observe
-					((DefaultTableModel) tabla.getModel()).addRow(fila);
+					agregarTabla(tabla,cola1.getRaiz());
+					
 					//Asigno tiempo final para guardar el anterior
 					setTiempoFinal(cola1.getRaiz().getT_final());
 
 					textFieldNombre.setText("");
-					textFieldTLlegada.setText("");
+					textFieldTLlegada.setText("0");
 					textFieldTRafaga.setText("");
 					//Extraigo de la cola que uso para asignar valores
 					cola1.extraer();
@@ -164,30 +155,10 @@ public class PanelMenuRR extends JPanel {
 				// En caso de que haya bloqueados entra y dibuja los proceso que faltaron por
 				// terminar
 				if (!temp.vacia()) {
-					int col = diagrama.getModel().getColumnCount();
-					JOptionPane.showMessageDialog(null, "Se bloqueo el proceso: "+temp.getRaiz().getNombre());
-					for (int i = 0; i < contBloq; i++) {
-						Object[] fila = new Object[col];
-						//Muestro que es el restante de un proceso bloqueado 
-						fila[0] = temp.getRaiz().getNombre()+" BQ";
-						// Dibuja lineas diferentes ya que es la terminacion de un proceso bloqueado
-						for (int j = 1; j <= temp.getRaiz().getT_comienzo(); j++) {
-							fila[j] = "||";
-						}
-						// Dibuja el restante del proceso
-						for (int j = temp.getRaiz().getT_comienzo(); j < temp.getRaiz().getT_final(); j++) {
-							fila[j+1] = "XX";
-						}
-						//Agrega la fila al diagrama de gant
-						((DefaultTableModel) diagrama.getModel()).addRow(fila);
-						
-						//Se extrae de la cola
-						temp.extraer();
-					}
+					 SimulacionBloqueo(diagrama);
 				}
 				JOptionPane.showMessageDialog(null, "Se ha simulado correctamente.");
 				cont = 0;
-
 			}
 		});
 		btnSimular.setBounds(15, 350, 120, 22);
@@ -400,9 +371,10 @@ public class PanelMenuRR extends JPanel {
 			if (temp.getRaiz().getBloqueado() % 5 == 0 && tempito == 1) {
 				//Si el proceso es el ultimo ya no se bloqueara
 				if(temp.getRaiz().getSiguiente()!=null) {
-					bloqueo(fila,diagrama,temp.getRaiz());
 					//Muestro que sera un proceso bloqueado por el BQ
 					fila[0] = temp.getRaiz().getNombre()+" BQ";
+					bloqueo(fila,diagrama,temp.getRaiz());	
+
 				}
 			} else {
 				// En caso de que no se bloquee se dibuja el proceso normal
@@ -418,7 +390,28 @@ public class PanelMenuRR extends JPanel {
 
 		}
 	}	
-	
+	public void SimulacionBloqueo(JTable diagrama) {
+		int col = diagrama.getModel().getColumnCount();
+		JOptionPane.showMessageDialog(null, "Se bloqueo el proceso: "+temp.getRaiz().getNombre());
+		for (int i = 0; i < contBloq; i++) {
+			Object[] fila = new Object[col];
+			//Muestro que es el restante de un proceso bloqueado 
+			fila[0] = temp.getRaiz().getNombre()+" BQ";
+			// Dibuja lineas diferentes ya que es la terminacion de un proceso bloqueado
+			for (int j = iniciobl+1; j <= temp.getRaiz().getT_comienzo(); j++) {
+				fila[j] = "||";
+			}
+			// Dibuja el restante del proceso
+			for (int j = temp.getRaiz().getT_comienzo(); j < temp.getRaiz().getT_final(); j++) {
+				fila[j+1] = "XX";
+			}
+			//Agrega la fila al diagrama de gant
+			((DefaultTableModel) diagrama.getModel()).addRow(fila);
+			
+			//Se extrae de la cola
+			temp.extraer();
+		}
+	}
 	public void bloqueo(Object[] fila,JTable diagrama,Proceso cola) {
 		tempito = 0;
 		int diferencia = cola.getT_rafaga()/2;
@@ -428,6 +421,7 @@ public class PanelMenuRR extends JPanel {
 		for (int j = cola.getT_comienzo(); j <cola.getT_final(); j++) {
 			fila[j + 1] = "XX";
 		}
+		iniciobl=cola.getT_final();
 		//inserta valor de rafaga restante al final de la cola
 		temp.insertar(cola.getT_llegada(), cola.getT_rafaga()-diferencia,
 				temp.getFondo().getT_final(),0,0, 0,cola.getBloqueado(), cola.getNombre());
