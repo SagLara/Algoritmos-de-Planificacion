@@ -8,7 +8,7 @@ public class MainProcesosRR {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    VentanaProcesos frame = new VentanaProcesos();
+                    VentanaProcesosRR frame = new VentanaProcesosRR();
                     frame.setVisible(true);
                 } catch (Exception e) {
                     e.printStackTrace();
