@@ -89,14 +89,15 @@ public class PanelMenu extends JPanel {
 						|| textFieldTRafaga.getText().equals("")) {
 					JOptionPane.showMessageDialog(null, "ERROR. \n Por favor Ingrese todos los datos");
 				} else {
-
+					//Funcion que agrega un nodo a la cola
 					Agregar();
-
+					//Se inserta un nodo a la cola temporal
+					//Cola temporal manejara los datos para la simulacion
 					temp.insertar(Integer.parseInt(textFieldTLlegada.getText()), cola1.getRaiz().getT_rafaga(),
 							cola1.getRaiz().getT_comienzo(), cola1.getRaiz().getT_final(),
 							cola1.getRaiz().getT_retorno(), cola1.getRaiz().getT_espera(),
 							cola1.getRaiz().getBloqueado(), textFieldNombre.getText());
-
+					
 					int col = tabla.getModel().getColumnCount();
 
 					Object[] fila = new Object[col];
@@ -107,21 +108,18 @@ public class PanelMenu extends JPanel {
 					fila[4] = cola1.getRaiz().getT_final();
 					fila[5] = cola1.getRaiz().getT_retorno();
 					fila[6] = cola1.getRaiz().getT_espera();
-
+					//Agrego al JTable los nuevos valores para que el usuario los observe
 					((DefaultTableModel) tabla.getModel()).addRow(fila);
-
+					//Asigno tiempo final para guardar el anterior
 					setTiempoFinal(cola1.getRaiz().getT_final());
 
 					textFieldNombre.setText("");
 					textFieldTLlegada.setText("");
 					textFieldTRafaga.setText("");
-
+					//Extraigo de la cola que uso para asignar valores
 					cola1.extraer();
 					// JOptionPane.showMessageDialog(null, "Se han registrado los datos con exito");
-
-					for (int i = 1; i < diagrama.getColumnCount(); i++) {
-						diagrama.removeColumnSelectionInterval(0, i);
-					}
+					//Sumo contador para saber cuantos proces se agregaron
 					cont += 1;
 				}
 			}
@@ -134,7 +132,7 @@ public class PanelMenu extends JPanel {
 		btnSimular.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//borrarTabla(tabla);
+				
 				if (diagrama.getColumnCount() < 2) {
 					// Actualiza valores de la tabla
 					actualizar(tabla);
@@ -143,9 +141,9 @@ public class PanelMenu extends JPanel {
 					for (int i = 0; i < temp.getFondo().getT_final() + 1; i++) {
 						((DefaultTableModel) diagrama.getModel()).addColumn("" + i);
 					}
-
+					//Actualiza
 					Simulacion(diagrama);
-					//SimulacionRC(diagrama);
+					
 
 				} else {
 					// Actualiza valores de la tabla
@@ -158,7 +156,7 @@ public class PanelMenu extends JPanel {
 						((DefaultTableModel) diagrama.getModel()).addColumn("" + i);
 					}
 					
-					// Actualizar
+					// Actualiza
 					Simulacion(diagrama);
 
 					
@@ -167,7 +165,7 @@ public class PanelMenu extends JPanel {
 				// terminar
 				if (!temp.vacia()) {
 					int col = diagrama.getModel().getColumnCount();
-					System.out.println("Columnasss: \t"+col);
+					
 					for (int i = 0; i < contBloq; i++) {
 						Object[] fila = new Object[col];
 						fila[0] = nom;
@@ -179,9 +177,10 @@ public class PanelMenu extends JPanel {
 						for (int j = temp.getRaiz().getT_comienzo(); j < temp.getRaiz().getT_final(); j++) {
 							fila[j+1] = "XX";
 						}
-
+						//Agrega la fila al diagrama de gant
 						((DefaultTableModel) diagrama.getModel()).addRow(fila);
-
+						
+						//Se extrae de la cola
 						temp.extraer();
 					}
 				}
@@ -210,6 +209,7 @@ public class PanelMenu extends JPanel {
 		for (int i = 0; i < cont; i++) {
 			
 			if (aux3.getT_rafaga() > quantum) {
+				//hice un print en vez del comentario jeje
 				System.out.println("|------RAFAGA + 4-----|"+(i+1));
 				//(quantum * (cont + i)) - dif
 				if(anterior<4) {
@@ -217,21 +217,26 @@ public class PanelMenu extends JPanel {
 				}else {
 					aux3.setT_comienzo(auxAntes.getT_final());
 				}
-				
+				//Guardo nombres y rafagas de los procesos que se repetiran
 				nombres[help]=aux3.getNombre();	
 				rafagas[help]=aux3.getT_rafaga()-quantum;
+				//La rafaga del proceso cambia a ser el quantum
 				aux3.setT_rafaga(quantum);
-				
+				//Se actualizan valores de tiempo final retorno y espera
 				aux3.setT_final(aux3.getT_comienzo() + aux3.getT_rafaga());
 				aux3.setT_retorno(aux3.getT_final() - aux3.getT_llegada());
 				aux3.setT_espera(aux3.getT_retorno() - aux3.getT_rafaga());
-				
+				//Se agregan esperas a los proces que se repetiran
 				esperas[help]=aux3.getT_final();
+				//Se guarda el tiempo final del proceso anterior
 				anterior=aux3.getT_final();
+				//sumara procesos que tengan que repetirse
 				help+=1;
 				auxAntes=aux3;
 			} else {
+				//x2
 				System.out.println("|------RAFAGA PQUE-----|");
+				//se actualizan con los nuevos valores de los procesos 
 				aux3.setT_comienzo(auxAntes.getT_final());
 				if(i==0) {
 					aux3.setT_comienzo(0);
@@ -239,27 +244,32 @@ public class PanelMenu extends JPanel {
 				aux3.setT_final(aux3.getT_comienzo() + aux3.getT_rafaga());
 				aux3.setT_retorno(aux3.getT_final() - aux3.getT_llegada());
 				aux3.setT_espera(aux3.getT_retorno() - aux3.getT_rafaga());
+				//valor en que comenzara un proceso en caso de que el anterior no se haya repetido
 				dif =aux3.getT_final();
 				anterior=aux3.getT_rafaga();
 				auxAntes=aux3;
 			}
 			aux3 = aux3.getSiguiente();
+			//Imprimo cambios de la cola
 			temp.imprimir();
 		}
 		for (int i = 0; i < help; i++) {
-			//(quantum * (cont + i)) - dif
+			//Agrego los valores que re repitieron por la rafaga>quantum a  la cola
 			System.out.println(nombres[i]);
 			AddRR(rafagas[i],nombres[i],quantum,esperas[i]);
 			agregarTabla(tabla, temp.getFondo());
 			sumEsperas(nombres[i],help);
 		}
 		temp.imprimir();
+		//añado nuevos valores a contador global de procesos
 		cont+=help;
 		System.out.println(cont);
+		//revisa si en la cola algun proceso necesita repetirse mas
 		Proceso repetir = temp.getRaiz();
 		for (int i = 0; i < cont; i++) {
 			System.out.println("ENTRE A RECOMPARAR AMIX \t"+repetir.getT_rafaga());
 			if(repetir.getT_rafaga()>4) {
+				//si se tiene que repetir se llama a la funcion recursiva para que vuelva y haga el proceso
 				actualizar(tabla);
 			}
 			repetir= repetir.getSiguiente();
@@ -270,6 +280,7 @@ public class PanelMenu extends JPanel {
 		int espera = 0;
 		int contador=0;
 		Proceso esp = temp.getRaiz();
+		//Suma las esperas de los procesos que se tuvieron que repetir mas de 1 vez
 		while(esp!=null){
 			System.out.println("ENTRE A SUMAR ESPERAS \t"+nombre+"\t:"+esp.getNombre());
 			if(esp.getNombre()==nombre) {
@@ -283,7 +294,7 @@ public class PanelMenu extends JPanel {
 			esp= esp.getSiguiente();
 		}
 	}
-	
+	//Agrega un nodo a la cola temporal para el algoritmo Round robin
 	public void AddRR(int rafaga,String nombre,int quantum,int espera) {
 		temp.insertar(0, rafaga ,temp.getFondo().getT_final(),0,
 				0,0,0, nombre);
@@ -309,24 +320,27 @@ public class PanelMenu extends JPanel {
 			contBloq += 1;
 		}
 	}
+	//esto no se si funciona jeje
 	
-	public void borrarTabla(JTable tabla) {
-
-		
-		for(int i=0;i<cont;i++) {
-			tabla.setValueAt("Hola", i, 0);
-			aux=aux.getSiguiente();
-		}
-		
-	}
+//	public void borrarTabla(JTable tabla) {
+//
+//		
+//		for(int i=0;i<cont;i++) {
+//			tabla.setValueAt("Hola", i, 0);
+//			aux=aux.getSiguiente();
+//		}
+//		
+//	}
 
 	public void editar(JTable tabla, Proceso cola) {
 		Proceso auxT =  cola;
 		int i = 0;
 		int col = tabla.getModel().getColumnCount();
 		Object[] fila = new Object[col];
+		
 		while (auxT != null) {
 			if (i < cont) {
+				//edito los valores que estaban en la cola
 				tabla.setValueAt(auxT.getNombre(), i, 0);
 				tabla.setValueAt(auxT.getT_llegada(), i, 1);
 				tabla.setValueAt(auxT.getT_rafaga(), i, 2);
@@ -336,6 +350,7 @@ public class PanelMenu extends JPanel {
 				tabla.setValueAt(auxT.getT_espera(), i, 6);
 				i++;
 			} else {
+				//agrego valores que no estaban en la cola
 				fila[0] = auxT.getNombre();
 				fila[1] = auxT.getT_llegada();
 				fila[2] = auxT.getT_rafaga();
@@ -343,7 +358,7 @@ public class PanelMenu extends JPanel {
 				fila[4] = auxT.getT_final();
 				fila[5] = auxT.getT_retorno();
 				fila[6] = auxT.getT_espera();
-
+				//agrego nueva fila
 				((DefaultTableModel) tabla.getModel()).addRow(fila);
 			}
 
@@ -351,7 +366,7 @@ public class PanelMenu extends JPanel {
 		}
 
 	}
-	
+	//agrega n elementos de la cola que le pasen a la tabla
 	public void agregarTabla(JTable tabla, Proceso cola) {
 		Proceso auxT =  cola;
 		int col = tabla.getModel().getColumnCount();
@@ -383,6 +398,7 @@ public class PanelMenu extends JPanel {
 			
 			// Verificacion si el sistema esta bloqueado
 			if (temp.getRaiz().getBloqueado() % 5 == 0 && tempito == 1) {
+				//Si el proceso es el ultimo ya no se bloqueara
 				if(temp.getRaiz().getSiguiente()!=null) {
 					bloqueo(fila,diagrama,temp.getRaiz());	
 				}
@@ -392,12 +408,11 @@ public class PanelMenu extends JPanel {
 					fila[j + 1] = "XX";
 				}
 				temp.extraer();
-				// A�ade la fila a la tabla
+				// Añade la fila a la tabla
 				
 			}
 			((DefaultTableModel) diagrama.getModel()).addRow(fila);
-			diagrama.setVisible(false);
-			diagrama.setVisible(true);
+
 		}
 	}	
 	
@@ -410,12 +425,13 @@ public class PanelMenu extends JPanel {
 		for (int j = cola.getT_comienzo(); j <cola.getT_final(); j++) {
 			fila[j + 1] = "XX";
 		}
+		//inserta valor de rafaga restante al final de la cola
 		temp.insertar(cola.getT_llegada(), cola.getT_rafaga()-diferencia,
 				temp.getFondo().getT_final(),0,0, 0,cola.getBloqueado(), cola.getNombre());
 		temp.getFondo().setT_final(temp.getFondo().getT_comienzo() + diferencia);
 		temp.getFondo().setT_retorno(temp.getFondo().getT_final());
 		temp.getFondo().setT_espera(temp.getFondo().getT_comienzo() - cola.getT_final());
-		
+		//Actualiza a la cola con los nuevos valores que tendran por el bloqueo
 		Proceso aux = cola.getSiguiente();
 		while(aux!=null){
 			aux.setT_comienzo(aux.getT_comienzo()-diferencia);
@@ -424,7 +440,7 @@ public class PanelMenu extends JPanel {
 			aux.setT_espera(aux.getT_retorno()-aux.getT_rafaga());
 			aux=aux.getSiguiente();
 		}
-		//((DefaultTableModel) diagrama.getModel()).addRow(fila);
+		
 		
 		temp.imprimir();
 		temp.extraer();
