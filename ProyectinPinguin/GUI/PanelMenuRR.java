@@ -367,10 +367,9 @@ public class PanelMenuRR extends JPanel {
 	public void Simulacion(JTable diagrama) {
 		for (int i = 0; i < cont; i++) {
 			System.out.println(tempRR.getRaiz().getT_comienzo());
-			if (tempRR.getRaiz().getT_comienzo()< 20) {
+			if (tempRR.getRaiz().getT_final()< 20) {
 				int col = diagrama.getModel().getColumnCount();
 				Object[] fila = new Object[col];
-
 				// Dibuja desde el tiempo de llegada hasta antes de comenzar
 				for (int j = tempRR.getRaiz().getT_llegada(); j < tempRR.getRaiz().getT_comienzo(); j++) {
 					fila[j + 1] = "--";
@@ -391,10 +390,12 @@ public class PanelMenuRR extends JPanel {
 					for (int j = tempRR.getRaiz().getT_comienzo(); j < tempRR.getRaiz().getT_final(); j++) {
 						fila[j + 1] = "XX";
 					}
+					tempRR.extraer();
+
 					
 					// Añade la fila a la tabla
 				}
-				tempRR.extraer();
+				//tempRR.extraer();
 				((DefaultTableModel) diagrama.getModel()).addRow(fila);
 			} else {
 				System.out.println("Entre here");
@@ -463,7 +464,7 @@ public class PanelMenuRR extends JPanel {
 		}
 		iniciobl = cola.getT_final();
 		// inserta valor de rafaga restante al final de la cola
-		tempRR.insertar(cola.getT_llegada(), cola.getT_rafaga() - diferencia, tempRR.getFondo().getT_final(), 0, 0, 0,
+		tempRR.insertar(cola.getT_llegada(), cola.getT_rafaga() - diferencia, tempRR.getFondo().getT_final()-diferencia, 0, 0, 0,
 				cola.getBloqueado(), cola.getNombre());
 		tempRR.getFondo().setT_final(tempRR.getFondo().getT_comienzo() + diferencia);
 		tempRR.getFondo().setT_retorno(tempRR.getFondo().getT_final());
@@ -479,8 +480,8 @@ public class PanelMenuRR extends JPanel {
 			aux.setT_espera(aux.getT_retorno() - aux.getT_rafaga());
 			aux = aux.getSiguiente();
 		}
-
 		tempRR.imprimir();
+		tempRR.extraer();
 	}
 
 //	private void esperarXsegundos(int segundos) {

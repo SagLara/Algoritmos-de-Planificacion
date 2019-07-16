@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
+import GUIProcesoPR.VentanaProcesosPR;
+
 
 public class PanelMenu extends JPanel{
 
@@ -117,6 +119,9 @@ public class PanelMenu extends JPanel{
 				temp.imprimir();
 				agregarTabla(tabla, temp.getRaiz());
 				System.out.println("Entre aqui?");
+				
+				
+				
 				if(diagrama.getRowCount()<2) {
 					for(int i=0;i<temp.getFondo().getT_final()+1;i++) {
 						((DefaultTableModel) diagrama.getModel()).addColumn(""+i);
@@ -132,6 +137,7 @@ public class PanelMenu extends JPanel{
 					Simulacion(diagrama);
 				}
 				if(!temp.vacia()) {
+					temp.setRaiz(temp.getFondo());
 					SimulacionBloqueo(diagrama);
 				}
 				JOptionPane.showMessageDialog(null, "Se ha simulado correctamente");
@@ -213,8 +219,11 @@ public class PanelMenu extends JPanel{
 	}
 	
 	public void Simulacion(JTable diagrama){
-		for (int i = 0; i < cont; i++) {
 
+		for (int i = 0; i < cont; i++) {
+		
+			if (temp.getRaiz().getT_final()< 20) {
+			
 			int col = diagrama.getModel().getColumnCount();
 			Object[] fila = new Object[col];
 			// Dibuja desde el tiempo de llegada hasta antes de comenzar
@@ -241,7 +250,32 @@ public class PanelMenu extends JPanel{
 			}
 			temp.extraer();
 			((DefaultTableModel) diagrama.getModel()).addRow(fila);
-
+			}else {
+				VentanaProcesosPR vt=new VentanaProcesosPR();
+				vt.setVisible(true);
+				//Para que se quede el bloqueadin
+				temp.getFondo().setT_comienzo(temp.getRaiz().getT_comienzo());
+				temp.getFondo().setT_final(temp.getFondo().getT_comienzo()+temp.getFondo().getT_rafaga());
+				temp.imprimir();
+				
+				int com=0;
+				int conti=0;
+				Proceso auxito= temp.getRaiz();
+				while(auxito!=temp.getFondo()) {
+					vt.getPanelmenu().getTempPR().insertar(auxito.getT_llegada(),1, auxito.getT_rafaga(),
+							0, 0, 0, 0, auxito.getBloqueado(), auxito.getNombre());
+					vt.getPanelmenu().getTempPR().getFondo().setT_comienzo(com);
+					vt.getPanelmenu().getTempPR().getFondo().setT_final(com+auxito.getT_rafaga());
+					com=vt.getPanelmenu().getTempPR().getFondo().getT_final();
+					vt.getPanelmenu().getTempPR().getFondo().setT_retorno(com);
+					vt.getPanelmenu().getTempPR().getFondo().setT_retorno(com-auxito.getT_rafaga());
+					auxito=auxito.getSiguiente();
+					conti+=1;
+				}
+				vt.getPanelmenu().setCont(conti);
+				vt.getPanelmenu().getTempPR().imprimir();
+				break;
+			}
 		}
 	}	
 	
